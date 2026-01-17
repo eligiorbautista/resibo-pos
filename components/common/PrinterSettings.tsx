@@ -32,7 +32,7 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
   currentConfig,
 }) => {
   const [config, setConfig] = useState<PrinterConfig>(
-    currentConfig || { connectionType: "bluetooth" },
+    currentConfig || { connectionType: "bluetooth", paperWidth: 32 },
   );
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(
@@ -53,18 +53,13 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
 
     try {
       const printer = new ThermalPrinterService(config);
-      const success = await printer.testConnection();
+      await printer.testConnection();
 
-      if (success) {
-        setTestResult("success");
-        setTestMessage("Test receipt sent successfully!");
-      } else {
-        setTestResult("error");
-        setTestMessage("Test failed - check your printer connection");
-      }
+      setTestResult("success");
+      setTestMessage("Connection test successful! Printer is ready to use.");
     } catch (error) {
       setTestResult("error");
-      setTestMessage(error instanceof Error ? error.message : "Test failed");
+      setTestMessage(error instanceof Error ? error.message : "Connection test failed");
     } finally {
       setIsTesting(false);
     }
@@ -455,7 +450,7 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
                 Paper Width (characters)
               </label>
               <select
-                value={config.paperWidth || 48}
+                value={config.paperWidth || 32}
                 onChange={(e) =>
                   setConfig({ ...config, paperWidth: parseInt(e.target.value) })
                 }

@@ -489,6 +489,101 @@ export class ThermalPrinterService {
   }
 
   /**
+   * Test connection to printer without printing
+   */
+  async testConnection(): Promise<void> {
+    if (!navigator.bluetooth) {
+      throw new Error(
+        "Web Bluetooth is not supported. Please use Chrome, Edge, or another Chromium-based browser with Bluetooth support.",
+      );
+    }
+
+    let device: BluetoothDevice | null = null;
+
+    try {
+      // Common service UUIDs for thermal printers
+      const commonServiceUuids = [
+        "49535343-fe7d-4ae5-8fa9-9fafd205e455", // HiTi/Generic SPP
+        "0000ffe0-0000-1000-8000-00805f9b34fb", // Generic UART
+        "6e400001-b5a3-f393-e0a9-e50e24dcca9e", // Nordic UART
+        "0000180f-0000-1000-8000-00805f9b34fb", // Battery Service
+      ];
+
+      // Set up request options - accept all devices
+      const requestOptions: RequestDeviceOptions = {
+        acceptAllDevices: true,
+        optionalServices: [
+          ...commonServiceUuids,
+          ...(this.config.bluetoothServiceUuid ? [this.config.bluetoothServiceUuid] : [])
+        ],
+      };
+
+      console.log("Testing Bluetooth connection...");
+      device = await navigator.bluetooth.requestDevice(requestOptions);
+      console.log("Device selected:", device.name || device.id);
+
+      if (!device.gatt) {
+        throw new Error("GATT server not available on selected device");
+      }
+
+      console.log("Connecting to GATT server...");
+      const server = await device.gatt.connect();
+      console.log("Connected to GATT server successfully");
+
+      // Test if we can find a compatible service
+      let serviceFound = false;
+      const servicesToTry = this.config.bluetoothServiceUuid 
+        ? [this.config.bluetoothServiceUuid, ...commonServiceUuids]
+        : commonServiceUuids;
+
+      for (const uuid of servicesToTry) {
+        try {
+          console.log(`Testing service UUID: ${uuid}`);
+          await server.getPrimaryService(uuid);
+          console.log(`Service ${uuid} found - printer is compatible`);
+          serviceFound = true;
+          break;
+        } catch (serviceError) {
+          console.log(`Service ${uuid} not found, trying next...`);
+        }
+      }
+
+      if (!serviceFound) {
+        throw new Error("Could not find compatible service on the printer. Make sure the printer supports SPP (Serial Port Profile).");
+      }
+
+      console.log("✅ Connection test successful! Printer is ready to use.");
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message.includes("User cancelled") ||
+          error.name === "NotFoundError"
+        ) {
+          throw new Error("No printer selected or printer not found");
+        } else if (error.name === "NotSupportedError") {
+          throw new Error("Bluetooth printing is not supported on this device");
+        } else if (error.name === "NetworkError") {
+          throw new Error("Failed to connect to printer. Make sure the printer is turned on and paired with your device.");
+        } else {
+          console.error("Bluetooth connection test error:", error);
+          throw new Error(`Connection test failed: ${error.message}`);
+        }
+      }
+      throw error;
+    } finally {
+      // Clean up connection
+      if (device?.gatt?.connected) {
+        try {
+          device.gatt.disconnect();
+          console.log("Disconnected from printer");
+        } catch (disconnectError) {
+          console.warn("Error disconnecting from printer:", disconnectError);
+        }
+      }
+    }
+  }
+
+  /**
    * Test print function
    */
   async testPrint(): Promise<void> {

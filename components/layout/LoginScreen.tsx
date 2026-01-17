@@ -51,30 +51,30 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
-      <div className="bg-white p-10 rounded-[32px] shadow-2xl w-full max-w-md text-center border border-gray-200/50 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center bg-black p-2 sm:p-4">
+      <div className="bg-white p-4 sm:p-6 md:p-8 lg:p-10 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm sm:max-w-md text-center border border-gray-200/50 backdrop-blur-sm">
         {/* Logo and Branch Section */}
-        <div className="mb-10">
-          <div className="flex justify-center mb-4">
+        <div className="mb-6 sm:mb-8 lg:mb-10">
+          <div className="flex justify-center mb-3 sm:mb-4">
             <img
               src={BRANDING.LOGO_BLACK}
               alt={BRANDING.LOGO_ALT_TEXT}
-              className="h-10 object-contain transition-transform duration-300 hover:scale-105"
+              className="h-8 sm:h-10 object-contain transition-transform duration-300 hover:scale-105"
             />
           </div>
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">
+          <div className="flex items-center justify-center gap-2 mt-2 sm:mt-3">
+            <p className="text-[9px] sm:text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">
               {branchName}
             </p>
           </div>
         </div>
 
         {/* PIN Indicator */}
-        <div className="flex justify-center gap-3 mb-8">
+        <div className="flex justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-200 ${
                 pin.length > i
                   ? "bg-black scale-125 shadow-md"
                   : "bg-gray-200 scale-100"
@@ -84,7 +84,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
         </div>
 
         {/* Keypad */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6 sm:mb-8">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, "C", 0, "OK"].map((key) => {
             const isNumber = typeof key === "number";
             const isClear = key === "C";
@@ -97,7 +97,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
                 onClick={() => handleKeypadClick(key)}
                 disabled={isOK && !isOKEnabled}
                 className={`
-                  h-14 rounded-2xl flex items-center justify-center text-xl font-black
+                  h-12 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl font-black
                   transition-all duration-150 active:scale-95
                   ${
                     isOK
@@ -117,13 +117,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
         </div>
 
         {/* Helper Text */}
-        <p className="text-xs text-gray-400 mb-6 font-medium">
+        <p className="text-[11px] sm:text-xs text-gray-400 mb-4 sm:mb-6 font-medium">
           Enter your 4-digit PIN
         </p>
 
         {/* Footer */}
-        <div className="pt-6 border-t border-gray-100">
-          <p className="text-[9px] text-gray-400 text-center font-medium">
+        <div className="pt-4 sm:pt-6 border-t border-gray-100">
+          <p className="text-[8px] sm:text-[9px] text-gray-400 text-center font-medium">
             © 2026 <span className="font-bold text-gray-700">Eli Bautista</span>
           </p>
         </div>
