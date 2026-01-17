@@ -1,0 +1,724 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Role {
+  MANAGER
+  CASHIER
+  SERVER
+  KITCHEN
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  GCASH
+  PAYMAYA
+}
+
+enum PaymentProvider {
+  PAYMONGO
+}
+
+enum PaymentIntentStatus {
+  CREATED
+  PENDING
+  PAID
+  EXPIRED
+  FAILED
+  CANCELLED
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEOUT
+  DELIVERY
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  NEEDS_CLEANING
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  COMPLETED
+  VOIDED
+}
+
+enum DiscountType {
+  NONE
+  PWD
+  SENIOR_CITIZEN
+}
+
+enum BreakType {
+  BREAK
+  LUNCH
+}
+
+enum WaitlistStatus {
+  WAITING
+  SEATED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  SEATED
+  CANCELLED
+  COMPLETED
+}
+
+enum EmployeeStatus {
+  IN
+  OUT
+}
+
+enum OrderPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// Employee Model
+model Employee {
+  id          String   @id @default(uuid())
+  name        String
+  role        Role
+  pin         String   // Hashed PIN
+  status      EmployeeStatus @default(OUT)
+  lastClockIn DateTime?
+  totalSales  Decimal  @default(0) @db.Decimal(10, 2)
+  totalTips   Decimal? @db.Decimal(10, 2)
+  hourlyRate  Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  transactions       Transaction[]      @relation("EmployeeTransactions")
+  serverTransactions Transaction[]      @relation("ServerTransactions")
+  cashDrawers        CashDrawer[]
+  timeRecords        TimeRecord[]
+  shiftSchedules     ShiftSchedule[]
+  customerNotes      CustomerNote[]
+  discountVerifications VerifiedDiscountID[]
+  cashDrops          CashDrop[]
+  cashPickups        CashPickup[]
+  shiftNotes         ShiftNote[]
+  payrollPayments    PayrollPayment[]
+  processedPayments  PayrollPayment[]   @relation("PayrollPayments")
+  auditLogs          AuditLog[]
+  zReadings          DailyZReading[]
+
+  @@index([pin])
+  @@index([role])
+}
+
+// Product Model
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  description String   @default("")
+  basePrice   Decimal  @db.Decimal(10, 2)
+  costPrice   Decimal  @db.Decimal(10, 2)
+  imageUrl    String?
+  reorderPoint Int     @default(0)
+  totalStock  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  variants       ProductVariant[]
+  modifierGroups ModifierGroup[]
+  transactionItems TransactionItem[]
+
+  @@index([category])
+  @@index([name])
+}
+
+// Product Variant
+model ProductVariant {
+  id        String  @id @default(uuid())
+  productId String
+  name      String
+  price     Decimal @db.Decimal(10, 2)
+  stock     Int     @default(0)
+  sku       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, sku])
+  @@index([productId])
+}
+
+// Modifier Group
+model ModifierGroup {
+  id            String    @id @default(uuid())
+  productId     String
+  name          String
+  required      Boolean   @default(false)
+  maxSelections Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  modifiers Modifier[]
+
+  @@index([productId])
+}
+
+// Modifier
+model Modifier {
+  id              String        @id @default(uuid())
+  modifierGroupId String
+  name            String
+  price           Decimal       @db.Decimal(10, 2)
+  category        String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  modifierGroup ModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@index([modifierGroupId])
+}
+
+// Customer Model
+model Customer {
+  id                  String   @id @default(uuid())
+  membershipCardNumber String  @unique
+  name                String
+  email               String
+  phone               String
+  loyaltyPoints       Int      @default(0)
+  joinedDate          DateTime @default(now())
+  birthday            DateTime?
+  tags                Json?    // Array of tag strings to match frontend
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  transactions    Transaction[]
+  customerNotes   CustomerNote[]
+  suspendedCarts  SuspendedCart[]
+  reservations    TableReservation[]
+  waitlistItems   WaitlistItem[]
+
+  @@index([membershipCardNumber])
+  @@index([email])
+  @@index([phone])
+  @@index([name])
+}
+
+// Customer Note
+model CustomerNote {
+  id         String   @id @default(uuid())
+  customerId String
+  employeeId String
+  note       String   @db.Text
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([customerId])
+}
+
+// Customer Tag (for segmentation)
+model CustomerTag {
+  id    String  @id @default(uuid())
+  name  String  @unique
+  color String?
+}
+
+// Table Model
+model Table {
+  id             String      @id @default(uuid())
+  number         String      @unique
+  capacity       Int
+  status         TableStatus @default(AVAILABLE)
+  location       String?
+  currentOrderId String?
+  reservationName String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  transactions  Transaction[]
+  reservations  TableReservation[]
+  waitlistItems WaitlistItem[]
+  suspendedCarts SuspendedCart[]
+
+  @@index([status])
+  @@index([number])
+}
+
+// Transaction Model
+model Transaction {
+  id                    String       @id @default(uuid())
+  employeeId            String
+  customerId            String?
+  serverId              String?
+  tableId               String?
+  orderType             OrderType
+  status                OrderStatus  @default(PENDING)
+  subtotal              Decimal      @db.Decimal(10, 2)
+  tax                   Decimal      @db.Decimal(10, 2) @default(0)
+  serviceCharge         Decimal      @db.Decimal(10, 2) @default(0)
+  discountTotal         Decimal      @db.Decimal(10, 2) @default(0)
+  discountType          DiscountType @default(NONE)
+  discountCardNumber    String?
+  discountVerifiedBy    String?
+  discountVerifiedAt    DateTime?
+  tip                   Decimal      @db.Decimal(10, 2) @default(0)
+  totalAmount           Decimal      @db.Decimal(10, 2)
+  loyaltyPointsRedeemed Int?         @default(0)
+  loyaltyPointsDiscount Decimal?     @db.Decimal(10, 2)
+  notes                 String?      @db.Text
+  kitchenNotes          String?      @db.Text
+  deliveryAddress       String?
+  deliveryCustomerName  String?      // Customer name for delivery orders
+  deliveryCustomerPhone String?      // Customer phone number for delivery orders
+  priority              OrderPriority? @default(NORMAL)
+  estimatedPrepTime     Int?
+  officialInvoiceNumber Int?          // BIR-required sequential invoice number
+  timestamp             DateTime     @default(now())
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  // Relations
+  employee       Employee        @relation("EmployeeTransactions", fields: [employeeId], references: [id])
+  server         Employee?       @relation("ServerTransactions", fields: [serverId], references: [id])
+  customer       Customer?       @relation(fields: [customerId], references: [id])
+  table          Table?          @relation(fields: [tableId], references: [id])
+  items          TransactionItem[]
+  payments       Payment[]
+  cashDrawerTransactions CashDrawerTransaction[]
+  eInvoicePayload EInvoicePayload?
+  paymentIntents PaymentIntent[]
+
+  @@index([employeeId])
+  @@index([customerId])
+  @@index([tableId])
+  @@index([status])
+  @@index([orderType])
+  @@index([timestamp])
+  @@index([createdAt])
+  @@index([officialInvoiceNumber])
+}
+
+// Transaction Item
+model TransactionItem {
+  id                String   @id @default(uuid())
+  transactionId     String
+  productId         String?
+  variantId         String?
+  name              String
+  price             Decimal  @db.Decimal(10, 2)
+  quantity          Int
+  discount          Decimal  @db.Decimal(10, 2) @default(0)
+  specialInstructions String? @db.Text
+  createdAt         DateTime @default(now())
+
+  transaction Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product     Product?         @relation(fields: [productId], references: [id])
+  modifiers   TransactionItemModifier[]
+
+  @@index([transactionId])
+  @@index([productId])
+}
+
+// Transaction Item Modifier
+model TransactionItemModifier {
+  id                String   @id @default(uuid())
+  transactionItemId String
+  modifierId        String?
+  modifierName      String
+  price             Decimal  @db.Decimal(10, 2)
+
+  transactionItem TransactionItem @relation(fields: [transactionItemId], references: [id], onDelete: Cascade)
+
+  @@index([transactionItemId])
+}
+
+// Payment
+model Payment {
+  id            String        @id @default(uuid())
+  transactionId String
+  method        PaymentMethod
+  amount        Decimal       @db.Decimal(10, 2)
+  createdAt     DateTime      @default(now())
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId])
+  @@index([method])
+}
+
+// Online payment intent records that can be linked to a Transaction once paid
+model PaymentIntent {
+  id            String             @id @default(uuid())
+  provider      PaymentProvider
+  method        PaymentMethod
+  status        PaymentIntentStatus @default(CREATED)
+
+  amount        Decimal            @db.Decimal(10, 2)
+  currency      String             @default("PHP")
+
+  // Provider reference ID (for idempotency/reference on provider side)
+  externalId    String             @unique
+  expiryDate    DateTime?
+
+  // PayMongo fields
+  paymongoPaymentIntentId String?  @unique
+  paymongoPaymentMethodId String?
+  paymongoRedirectUrl     String?
+
+  // Link to Transaction when finalized
+  transactionId String?
+  transaction   Transaction?       @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  // For debugging/audit
+  providerRaw   Json?
+  lastError     String?            @db.Text
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([provider])
+  @@index([method])
+  @@index([status])
+  @@index([transactionId])
+}
+
+// Cash Drawer
+model CashDrawer {
+  id                  String   @id @default(uuid())
+  employeeId          String
+  openingAmount       Decimal  @db.Decimal(10, 2)
+  closingAmount       Decimal? @db.Decimal(10, 2)
+  expectedAmount      Decimal? @db.Decimal(10, 2)
+  actualAmount        Decimal? @db.Decimal(10, 2)
+  difference          Decimal? @db.Decimal(10, 2)
+  denominationBreakdown Json?  // JSON object for denomination breakdown
+  openedAt            DateTime @default(now())
+  closedAt            DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  employee            Employee                  @relation(fields: [employeeId], references: [id])
+  transactions        CashDrawerTransaction[]
+  cashDrops           CashDrop[]
+  cashPickups         CashPickup[]
+  shiftNotes          ShiftNote[]
+
+  @@index([employeeId])
+  @@index([openedAt])
+  @@index([closedAt])
+}
+
+// Cash Drawer Transaction (junction table)
+model CashDrawerTransaction {
+  id            String     @id @default(uuid())
+  cashDrawerId  String
+  transactionId String
+
+  cashDrawer  CashDrawer  @relation(fields: [cashDrawerId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@unique([cashDrawerId, transactionId])
+  @@index([cashDrawerId])
+  @@index([transactionId])
+}
+
+// Cash Drop
+model CashDrop {
+  id         String   @id @default(uuid())
+  cashDrawerId String
+  employeeId String
+  amount     Decimal  @db.Decimal(10, 2)
+  reason     String
+  droppedAt  DateTime @default(now())
+
+  cashDrawer CashDrawer @relation(fields: [cashDrawerId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+
+  @@index([cashDrawerId])
+}
+
+// Cash Pickup
+model CashPickup {
+  id         String   @id @default(uuid())
+  cashDrawerId String
+  employeeId String
+  amount     Decimal  @db.Decimal(10, 2)
+  reason     String
+  pickedUpAt DateTime @default(now())
+
+  cashDrawer CashDrawer @relation(fields: [cashDrawerId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+
+  @@index([cashDrawerId])
+}
+
+// Shift Note
+model ShiftNote {
+  id         String   @id @default(uuid())
+  cashDrawerId String
+  employeeId String
+  note       String   @db.Text
+  createdAt  DateTime @default(now())
+
+  cashDrawer CashDrawer @relation(fields: [cashDrawerId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+
+  @@index([cashDrawerId])
+}
+
+// Suspended Cart
+model SuspendedCart {
+  id          String    @id @default(uuid())
+  customerId  String?
+  tableId     String?
+  serverId    String?
+  customerName String?
+  orderType   OrderType?
+  items       Json      // JSON array of CartItem
+  notes       String?   @db.Text
+  timestamp   DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  table    Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([timestamp])
+}
+
+// Time Record
+model TimeRecord {
+  id        String   @id @default(uuid())
+  employeeId String
+  clockIn   DateTime
+  clockOut  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  breaks   BreakRecord[]
+
+  @@index([employeeId])
+  @@index([clockIn])
+}
+
+// Break Record
+model BreakRecord {
+  id          String    @id @default(uuid())
+  timeRecordId String
+  startTime   DateTime
+  endTime     DateTime?
+  type        BreakType
+
+  timeRecord TimeRecord @relation(fields: [timeRecordId], references: [id], onDelete: Cascade)
+
+  @@index([timeRecordId])
+}
+
+// Shift Schedule
+model ShiftSchedule {
+  id          String   @id @default(uuid())
+  employeeId  String
+  startTime   DateTime
+  endTime     DateTime
+  dayOfWeek   Int      // 0 = Sunday, 6 = Saturday
+  isRecurring Boolean  @default(false)
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([dayOfWeek])
+}
+
+// Payroll Payment
+model PayrollPayment {
+  id          String   @id @default(uuid())
+  employeeId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  amount      Decimal  @db.Decimal(10, 2)
+  hoursWorked Decimal  @db.Decimal(10, 2)
+  regularPay  Decimal  @db.Decimal(10, 2)
+  overtimePay Decimal  @db.Decimal(10, 2)
+  paidBy      String   // Employee ID who processed the payment
+  paidAt      DateTime @default(now())
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  paidByEmployee Employee @relation("PayrollPayments", fields: [paidBy], references: [id])
+
+  @@index([employeeId])
+  @@index([paidAt])
+  @@index([periodStart, periodEnd])
+}
+
+// Table Reservation
+model TableReservation {
+  id             String           @id @default(uuid())
+  customerId     String?
+  tableId        String?
+  customerName   String
+  phone          String
+  partySize      Int
+  reservationDate DateTime
+  reservationTime String          // Time string like "18:00"
+  status         ReservationStatus @default(CONFIRMED)
+  notes          String?          @db.Text
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  table    Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([tableId])
+  @@index([reservationDate])
+  @@index([status])
+}
+
+// Waitlist Item
+model WaitlistItem {
+  id          String         @id @default(uuid())
+  customerId  String?
+  tableId     String?
+  customerName String
+  partySize   Int
+  phone       String?
+  status      WaitlistStatus @default(WAITING)
+  timestamp   DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  table    Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([timestamp])
+}
+
+// Verified Discount ID
+model VerifiedDiscountID {
+  id          String       @id @default(uuid())
+  employeeId  String
+  cardNumber  String
+  discountType DiscountType
+  customerName String?
+  verifiedAt  DateTime     @default(now())
+  lastUsedAt  DateTime?
+  usageCount  Int          @default(1)
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([cardNumber, discountType])
+  @@index([cardNumber])
+  @@index([employeeId])
+}
+
+// ============================================
+// BIR COMPLIANCE SUPPORT MODELS
+// ============================================
+
+// System-wide non-resettable grand total and invoice sequencing
+model SystemCounter {
+  id                Int      @id @default(1)
+  grandTotal        Decimal  @default(0) @db.Decimal(18, 2) // Non-resettable accumulating total sales
+  lastInvoiceNumber Int      @default(0)                    // Last issued official invoice number
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Generic audit trail for key actions (transactions, logins, configuration changes, etc.)
+model AuditLog {
+  id          String   @id @default(uuid())
+  employeeId  String?  // null if system / unauthenticated
+  action      String   // e.g. "LOGIN_SUCCESS", "CREATE_TRANSACTION", "VOID_TRANSACTION"
+  entityType  String?  // e.g. "TRANSACTION", "EMPLOYEE", "PRODUCT"
+  entityId    String?  // ID of the entity affected
+  details     Json?    // Arbitrary JSON payload with before/after values, metadata
+  ipAddress   String?  // Source IP when available
+  userAgent   String?  // Browser / client info when available
+  createdAt   DateTime @default(now())
+
+  employee Employee? @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// Daily Z-reading snapshot with running grand total and summarized metrics
+model DailyZReading {
+  id               String   @id @default(uuid())
+  businessDate     DateTime // Typically local date (no time) for the reading
+  generatedAt      DateTime @default(now())
+  generatedById    String   // Employee who generated the Z-reading
+  openingGrandTotal Decimal @db.Decimal(18, 2)
+  closingGrandTotal Decimal @db.Decimal(18, 2)
+  totalGrossSales   Decimal @db.Decimal(18, 2)
+  totalVatSales     Decimal @db.Decimal(18, 2) @default(0)
+  totalVatExempt    Decimal @db.Decimal(18, 2) @default(0)
+  totalDiscounts    Decimal @db.Decimal(18, 2) @default(0)
+  totalServiceCharge Decimal @db.Decimal(18, 2) @default(0)
+  totalVoidAmount   Decimal @db.Decimal(18, 2) @default(0)
+  totalTransactions Int      @default(0)
+  notes             String?  @db.Text
+
+  generatedBy Employee @relation(fields: [generatedById], references: [id])
+
+  @@unique([businessDate])
+  @@index([generatedById])
+}
+
+// Optional queue/table for E-Invoicing payloads (JSON) to support EIS integration
+model EInvoicePayload {
+  id             String   @id @default(uuid())
+  transactionId  String   @unique
+  payloadJson    Json     // JSON representation suitable for BIR EIS submission
+  status         String   @default("PENDING") // PENDING | SENT | FAILED
+  lastError      String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  sentAt         DateTime?
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+

@@ -1,0 +1,16 @@
+# Logo Assets Directory
+
+Place your logo images here.
+
+## Recommended formats:
+- SVG (scalable, best quality)
+- PNG (with transparent background)
+- WebP (modern, optimized)
+
+## Naming convention:
+- `logo.svg` or `logo.png` - Main logo
+- `logo-dark.svg` - Dark variant
+- `logo-light.svg` - Light variant
+- `logo-icon.svg` - Icon only version
+- `favicon.ico` - Browser favicon
+

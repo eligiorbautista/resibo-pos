@@ -1,0 +1,35 @@
+# Public Logos Directory
+
+Files in the `public/` folder are served at the root URL and are NOT processed by Vite.
+
+## When to use `public/logos/` vs `assets/logos/`:
+
+### Use `public/logos/` for:
+- ✅ Favicon (favicon.ico)
+- ✅ Logo referenced in HTML (index.html)
+- ✅ Logo needed via direct URL path
+- ✅ Files that shouldn't be processed/hashed by Vite
+
+### Use `assets/logos/` for:
+- ✅ Logo imported in React components
+- ✅ Logo that needs Vite processing/optimization
+- ✅ Logo with hashed filenames for cache busting
+
+## Usage:
+
+### In HTML (index.html):
+```html
+<link rel="icon" href="/logos/favicon.ico" />
+```
+
+### In React (direct path):
+```tsx
+<img src="/logos/logo.svg" alt="Logo" />
+```
+
+### In React (imported from assets):
+```tsx
+import logo from '../assets/logos/logo.svg';
+<img src={logo} alt="Logo" />
+```
+

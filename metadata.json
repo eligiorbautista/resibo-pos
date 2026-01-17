@@ -1,0 +1,7 @@
+{
+  "name": " POS & Business Hub",
+  "description": "Premium black-and-white POS system localized for the Philippines with intelligent AI business insights.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

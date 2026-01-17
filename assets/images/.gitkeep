@@ -1,0 +1,11 @@
+# General Images Directory
+
+Place other images here (product photos, icons, backgrounds, etc.).
+
+## Subdirectories you can create:
+- `products/` - Product images
+- `icons/` - Custom icons
+- `backgrounds/` - Background images
+- `avatars/` - User/employee avatars
+- `receipts/` - Receipt templates
+
