@@ -1,7 +1,7 @@
 # Resibo POS & Business Hub
 
 <div align="center">
-<img width="1200" height="475" alt="Resibo POS Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="Resibo POS Banner" src="https://github.com/user-attachments/assets/" />
 </div>
 
 A comprehensive Point of Sale (POS) and business management system built with modern web technologies. Resibo combines powerful POS functionality with business intelligence, employee management, inventory control, and more.
@@ -67,11 +67,6 @@ A comprehensive Point of Sale (POS) and business management system built with mo
 - Prisma - Modern database ORM
 - PostgreSQL - Production database
 - Express.js - Web application framework
-
-## AI Integration
-
-- Google Gemini AI - AI-powered insights and automation
-- Government API Integration - Automated verification services
 
 ## Getting Started
 
