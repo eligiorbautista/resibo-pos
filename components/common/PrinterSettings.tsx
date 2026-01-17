@@ -32,7 +32,7 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
   currentConfig,
 }) => {
   const [config, setConfig] = useState<PrinterConfig>(
-    currentConfig || { connectionType: "browser" },
+    currentConfig || { connectionType: "bluetooth" },
   );
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(
@@ -77,45 +77,13 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
 
   const connectionTypes = [
     {
-      id: "usb" as const,
-      name: "USB Direct",
-      description: "Direct USB connection using WebUSB",
-      icon: <Usb size={20} />,
-      recommended: true,
-      requirements: "Chrome/Edge browser, USB thermal printer",
-    },
-    {
       id: "bluetooth" as const,
       name: "Bluetooth",
       description: "Wireless Bluetooth thermal printer",
       icon: <Bluetooth size={20} />,
-      recommended: false,
+      recommended: true,
       requirements:
         "Chrome/Edge browser with Bluetooth, paired thermal printer",
-    },
-    {
-      id: "serial" as const,
-      name: "Serial/COM",
-      description: "USB via Serial port (WebSerial)",
-      icon: <Settings size={20} />,
-      recommended: false,
-      requirements: "Chrome/Edge browser, USB-to-Serial driver",
-    },
-    {
-      id: "network" as const,
-      name: "Network",
-      description: "WiFi/Ethernet thermal printer",
-      icon: <Wifi size={20} />,
-      recommended: false,
-      requirements: "Network-enabled thermal printer",
-    },
-    {
-      id: "browser" as const,
-      name: "Browser",
-      description: "Regular browser printing (fallback)",
-      icon: <Monitor size={20} />,
-      recommended: false,
-      requirements: "Any browser, any printer",
     },
   ];
 
