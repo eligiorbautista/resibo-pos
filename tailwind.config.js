@@ -16,7 +16,31 @@ export default {
       },
       screens: {
         'tablet': '768px',
+        'laptop': '1024px',
         'desktop': '1440px',
+        'wide': '1920px',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '112': '28rem',
+        '128': '32rem',
+      },
+      maxWidth: {
+        '8xl': '88rem',
+        '9xl': '96rem',
+      },
+      fontSize: {
+        'xxs': ['0.625rem', { lineHeight: '0.75rem' }],
+      },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          tablet: '1.5rem',
+          laptop: '2rem',
+          desktop: '2.5rem',
+        },
       },
     },
   },

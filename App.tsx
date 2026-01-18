@@ -993,7 +993,7 @@ const AppContent: React.FC = () => {
         onNavigateToPOS={handleNavigateToPOS}
       />
 
-      <main className="flex-1 flex flex-col relative overflow-hidden transition-all duration-300">
+      <main className="flex-1 flex flex-col relative overflow-hidden transition-smooth">
         <Routes>
           <Route path="/" element={<Navigate to="/pos" replace />} />
           <Route

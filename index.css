@@ -2,12 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Responsive base font-size scaling for tablets */
+/* Responsive base font-size scaling */
+/* Mobile (<768px): 100% = 16px base */
+/* Tablet (768px-1023px): 87.5% = 14px base */
+/* Laptop (1024px-1439px): 93.75% = 15px base */
 /* Desktop (1440px+): 100% = 16px base */
-/* Tablet (768px-1439px): 87.5% = 14px base (12.5% reduction) */
-/* Mobile (<768px): Inherits default 100% */
-@media (min-width: 768px) and (max-width: 1439px) {
+@media (min-width: 768px) and (max-width: 1023px) {
   html {
     font-size: 87.5%;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  html {
+    font-size: 93.75%;
+  }
+}
+
+@layer utilities {
+  /* Responsive container utilities */
+  .container-responsive {
+    @apply w-full mx-auto px-4 tablet:px-6 laptop:px-8 desktop:px-10;
+  }
+
+  .container-tight {
+    @apply w-full mx-auto px-3 tablet:px-4 laptop:px-6 desktop:px-8;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Responsive spacing utilities */
+  .space-y-responsive {
+    @apply space-y-3 tablet:space-y-4 laptop:space-y-5 desktop:space-y-6;
+  }
+
+  .gap-responsive {
+    @apply gap-3 tablet:gap-4 laptop:gap-5 desktop:gap-6;
+  }
+
+  /* Responsive grid utilities */
+  .grid-auto-fit {
+    @apply grid gap-4 tablet:gap-5 laptop:gap-6;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .grid-auto-fill {
+    @apply grid gap-4 tablet:gap-5 laptop:gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   }
 }

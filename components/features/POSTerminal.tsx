@@ -1867,7 +1867,7 @@ const POSTerminal: React.FC<POSProps> = ({
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2 sm:gap-4 pb-4 items-start">
+        <div className="flex-1 overflow-y-auto grid grid-cols-2 tablet:grid-cols-3 laptop:grid-cols-3 desktop:grid-cols-4 gap-2 tablet:gap-3 laptop:gap-4 pb-4 items-start">
           {filteredProducts.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-12 space-y-4">
               <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
@@ -1947,7 +1947,7 @@ const POSTerminal: React.FC<POSProps> = ({
       </div>
 
       {/* Right Column: Order Ticket */}
-      <div className="w-full tablet:w-72 lg:w-80 xl:w-96 flex flex-col bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="w-full tablet:w-72 lg:w-80 xl:w-96 flex flex-col bg-white rounded-2xl sm:rounded-3xl shadow-xl border-2 border-gray-300 overflow-hidden">
         <div className="p-2 tablet:p-3 sm:p-5 bg-black text-white flex justify-between items-center">
           <div>
             <h2 className="text-lg font-black tracking-tighter">TICKET</h2>
