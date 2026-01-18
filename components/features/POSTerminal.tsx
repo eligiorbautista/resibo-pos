@@ -1963,7 +1963,7 @@ const POSTerminal: React.FC<POSProps> = ({
           </button>
         </div>
 
-        <div className="p-2 tablet:p-2.5 sm:p-3 border-b border-gray-100 space-y-2">
+        <div className="p-2 tablet:p-2.5 sm:p-3 border-b border-gray-100 space-y-1.5 tablet:space-y-2">
           <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => setOrderType(OrderType.DINE_IN)}
@@ -2162,7 +2162,7 @@ const POSTerminal: React.FC<POSProps> = ({
           </div>
 
           {/* Discount Selection */}
-          <div className="space-y-1.5">
+          <div className="space-y-1 tablet:space-y-1.5">
             <label className="text-[7px] font-black text-gray-400 uppercase tracking-widest block">
               Discount
             </label>

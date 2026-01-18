@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Section - Scrollable on small screens */}
-      <nav className="flex-1 px-3 py-2 space-y-2 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white scrollbar-track-black">
+      <nav className="flex-1 px-3 py-2 space-y-1.5 tablet:space-y-2 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white scrollbar-track-black">
         <style jsx>{`
           nav::-webkit-scrollbar {
             width: 4px;
@@ -171,7 +171,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Footer Section - Always visible at bottom */}
-      <div className="flex-shrink-0 p-2 tablet:p-3 desktop:p-4 space-y-2 tablet:space-y-3 desktop:space-y-4 border-t border-white/10">
+      <div className="flex-shrink-0 p-2 tablet:p-2.5 desktop:p-4 space-y-1.5 tablet:space-y-2 desktop:space-y-4 border-t border-white/10">
         {/* User Info - More compact on mobile */}
         <div
           className={`flex items-center space-x-2 p-1.5 tablet:p-2 rounded-xl bg-zinc-900 border border-white/5 ${
