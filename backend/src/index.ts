@@ -23,6 +23,8 @@ import auditLogRoutes from "./routes/auditLog.routes";
 import reportsRoutes from "./routes/reports.routes";
 import eInvoiceRoutes from "./routes/eInvoice.routes";
 import paymentRoutes from "./routes/payment.routes";
+import printerRoutes from "./routes/printer.routes";
+import { initializePrinter } from "./controllers/printer.controller";
 
 dotenv.config();
 
@@ -86,6 +88,7 @@ app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/einvoice", eInvoiceRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/printer", printerRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);
@@ -96,9 +99,24 @@ export default app;
 
 // Start server only in development
 if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
     console.log(`🔗 API URL: http://localhost:${PORT}/api`);
+    
+    // Initialize printer if configured
+    if (process.env.PRINTER_PORT_PATH) {
+      console.log(`🖨️ Initializing printer on ${process.env.PRINTER_PORT_PATH}...`);
+      try {
+        await initializePrinter(process.env.PRINTER_PORT_PATH);
+      } catch (error) {
+        console.error('❌ Failed to initialize printer:', error);
+        console.log('⚠️ Server will continue without printer support');
+      }
+    } else {
+      console.log('⚠️ PRINTER_PORT_PATH not set in .env - printer disabled');
+      console.log('💡 To enable automatic printing, set PRINTER_PORT_PATH in .env');
+      console.log('💡 Run GET /api/printer/ports to list available ports');
+    }
   });
 }

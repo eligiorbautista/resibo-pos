@@ -46,12 +46,49 @@ export class ThermalPrinterService {
   private encoder = new TextEncoder();
   private logoCommands: Uint8Array | null = null;
   private logoLoadAttempted: boolean = false;
+  private static readonly SAVED_DEVICE_KEY = 'thermal_printer_device_id';
 
   constructor(config: PrinterConfig) {
     this.config = {
       paperWidth: 32,
       ...config,
     };
+  }
+
+  /**
+   * Save printer device ID to localStorage for automatic reconnection
+   */
+  private static savePrinterDevice(deviceId: string): void {
+    try {
+      localStorage.setItem(ThermalPrinterService.SAVED_DEVICE_KEY, deviceId);
+      console.log('✅ Saved printer device ID:', deviceId);
+    } catch (error) {
+      console.warn('Failed to save printer device:', error);
+    }
+  }
+
+  /**
+   * Get saved printer device ID from localStorage
+   */
+  private static getSavedDeviceId(): string | null {
+    try {
+      return localStorage.getItem(ThermalPrinterService.SAVED_DEVICE_KEY);
+    } catch (error) {
+      console.warn('Failed to get saved printer device:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear saved printer device (force re-pairing)
+   */
+  static forgetPrinter(): void {
+    try {
+      localStorage.removeItem(ThermalPrinterService.SAVED_DEVICE_KEY);
+      console.log('🗑️ Forgot saved printer device');
+    } catch (error) {
+      console.warn('Failed to forget printer device:', error);
+    }
   }
 
   /**
@@ -254,6 +291,18 @@ export class ThermalPrinterService {
 
     // ==== PAYMENT ====
     if (transaction.payments && transaction.payments.length > 0) {
+      // Check if this is a pending payment (before confirmation)
+      const isPending = 
+        transaction.notes?.includes("PENDING") || 
+        transaction.status === "PENDING" ||
+        transaction.id.startsWith("PENDING-");
+
+      if (isPending) {
+        receipt += this.formatText("*** PAYMENT PENDING ***", "center") + "\n";
+        receipt += this.formatText("Customer has not paid yet", "center") + "\n";
+        receipt += lightSeparator + "\n";
+      }
+
       for (const payment of transaction.payments) {
         const paymentMethod = this.formatPaymentMethod(payment.method);
         receipt += formatTotal(paymentMethod + ":", Number(payment.amount));
@@ -351,19 +400,48 @@ export class ThermalPrinterService {
         "0000180f-0000-1000-8000-00805f9b34fb", // Battery Service
       ];
 
-      // Set up request options - accept all devices
-      const requestOptions: RequestDeviceOptions = {
-        acceptAllDevices: true,
-        optionalServices: [
-          ...commonServiceUuids,
-          ...(this.config.bluetoothServiceUuid
-            ? [this.config.bluetoothServiceUuid]
-            : []),
-        ],
-      };
+      // Try to reconnect to saved device first
+      const savedDeviceId = ThermalPrinterService.getSavedDeviceId();
+      if (savedDeviceId) {
+        console.log("🔄 Attempting to reconnect to saved printer...", savedDeviceId);
+        try {
+          // Get previously paired devices (newer Web Bluetooth API)
+          const bluetooth = navigator.bluetooth as any;
+          if (bluetooth.getDevices) {
+            const devices = await bluetooth.getDevices();
+            device = devices.find((d: BluetoothDevice) => d.id === savedDeviceId) || null;
+            
+            if (device) {
+              console.log(`✅ Found saved device: ${device.name || device.id}`);
+            } else {
+              console.log("⚠️ Saved device not found in paired devices");
+            }
+          } else {
+            console.log("⚠️ getDevices() API not available, will request device");
+          }
+        } catch (error) {
+          console.log("⚠️ Could not access paired devices:", error);
+        }
+      }
 
-      console.log("📱 Requesting Bluetooth device...");
-      device = await navigator.bluetooth.requestDevice(requestOptions);
+      // If no saved device or reconnection failed, request new device
+      if (!device) {
+        const requestOptions: RequestDeviceOptions = {
+          acceptAllDevices: true,
+          optionalServices: [
+            ...commonServiceUuids,
+            ...(this.config.bluetoothServiceUuid
+              ? [this.config.bluetoothServiceUuid]
+              : []),
+          ],
+        };
+
+        console.log("📱 Requesting Bluetooth device...");
+        device = await navigator.bluetooth.requestDevice(requestOptions);
+        
+        // Save the newly selected device
+        ThermalPrinterService.savePrinterDevice(device.id);
+      }
       console.log(`✅ Device selected: ${device.name || device.id}`);
 
       if (!device.gatt) {

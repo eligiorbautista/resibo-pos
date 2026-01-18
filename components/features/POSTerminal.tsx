@@ -1002,6 +1002,30 @@ const POSTerminal: React.FC<POSProps> = ({
         ? tables.find((t) => t.id === transaction.tableId)
         : null;
 
+      // Try backend printing first (automatic, no picker!)
+      try {
+        const { printerApi } = await import('../../services/printerApi');
+        const result = await printerApi.printReceipt({
+          transaction,
+          employee,
+          customer,
+          table,
+        });
+
+        if (result.success) {
+          showToast("Receipt sent to printer automatically", "success");
+          return;
+        } else {
+          console.warn("Backend printing failed:", result.message);
+          // Fall through to browser printing
+        }
+      } catch (backendError) {
+        console.warn("Backend printer not available:", backendError);
+        // Fall through to browser printing
+      }
+
+      // Fallback: Use browser Bluetooth (requires user interaction)
+      console.log("📱 Falling back to browser Bluetooth printing...");
       const printer = new ThermalPrinterService(printerConfig);
       await printer.print(transaction, employee, customer, table);
 
@@ -1014,6 +1038,51 @@ const POSTerminal: React.FC<POSProps> = ({
           : "Failed to print receipt. Check printer settings.",
         "error",
       );
+    }
+  };
+
+  const printPendingReceipt = async () => {
+    if (!paymongoIntent) return;
+
+    try {
+      // Create a pending transaction for printing
+      const pendingTransaction: Transaction = {
+        id: "PENDING-" + Date.now(),
+        timestamp: new Date(),
+        items: [...cart],
+        subtotal: cartSubtotal,
+        tax: tax,
+        serviceCharge: serviceCharge,
+        totalAmount: cartTotal,
+        discountTotal: discountAmount,
+        discountType:
+          discountType !== DiscountType.NONE ? discountType : undefined,
+        discountCardNumber:
+          discountType !== DiscountType.NONE ? discountCardNumber : undefined,
+        tip: tipAmount,
+        payments: [
+          {
+            method: paymongoIntent.method as PaymentMethod,
+            amount: cartTotal,
+          },
+        ],
+        customerId: selectedCustomer?.id,
+        loyaltyPointsRedeemed:
+          loyaltyPointsToRedeem > 0 ? loyaltyPointsToRedeem : undefined,
+        loyaltyPointsDiscount:
+          loyaltyPointsDiscount > 0 ? loyaltyPointsDiscount : undefined,
+        employeeId: currentUser.id,
+        serverId: selectedServer?.id,
+        tableId: selectedTable?.id,
+        orderType: orderType,
+        status: OrderStatus.PENDING,
+        notes: `PENDING ${paymongoIntent.method} PAYMENT\n${orderNotes}`.trim(),
+      };
+
+      await printReceipt(pendingTransaction);
+    } catch (error) {
+      console.error("Failed to print pending receipt:", error);
+      showToast("Failed to print pending receipt", "error");
     }
   };
 
@@ -3752,18 +3821,26 @@ const POSTerminal: React.FC<POSProps> = ({
                     </div>
 
                     {paymongoIntent.redirectUrl && (
-                      <button
-                        onClick={() =>
-                          window.open(
-                            paymongoIntent.redirectUrl as string,
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                        className="mt-3 w-full py-3 bg-black text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.01] transition-all"
-                      >
-                        Open Payment Link
-                      </button>
+                      <>
+                        <button
+                          onClick={() =>
+                            window.open(
+                              paymongoIntent.redirectUrl as string,
+                              "_blank",
+                              "noopener,noreferrer",
+                            )
+                          }
+                          className="mt-3 w-full py-3 bg-black text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.01] transition-all"
+                        >
+                          Open Payment Link
+                        </button>
+                        <button
+                          onClick={() => printPendingReceipt()}
+                          className="mt-3 w-full py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+                        >
+                          <Printer size={16} /> Print Pending Receipt
+                        </button>
+                      </>
                     )}
 
                     {paymongoError && (
