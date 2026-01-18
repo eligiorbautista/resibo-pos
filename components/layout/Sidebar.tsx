@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={`${
-        isSidebarCollapsed ? "w-16 tablet:w-20" : "w-20 tablet:w-48 desktop:w-56"
+        isSidebarCollapsed ? "w-16" : "w-20 tablet:w-48 desktop:w-56"
       } bg-black text-white flex flex-col transition-all duration-300 ease-in-out relative z-30 h-screen overflow-hidden`}
     >
       {/* Header Section */}

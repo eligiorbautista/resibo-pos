@@ -1894,9 +1894,9 @@ const POSTerminal: React.FC<POSProps> = ({
                 key={product.id}
                 onClick={() => addToCart(product)}
                 // Don't block sales when stock is 0; many deployments treat inventory as advisory.
-                className="bg-white p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-black transition-all text-left flex flex-col group relative h-fit"
+                className="bg-white p-1 tablet:p-1.5 sm:p-3 rounded-md tablet:rounded-lg sm:rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-black transition-all text-left flex flex-col group relative h-fit"
               >
-                <div className="aspect-square rounded-lg sm:rounded-xl overflow-hidden mb-2 sm:mb-3 bg-gray-100 flex items-center justify-center">
+                <div className="aspect-square rounded-md overflow-hidden mb-1 tablet:mb-1.5 sm:mb-3 bg-gray-100 flex items-center justify-center">
                   {product.imageUrl ? (
                     <img
                       src={product.imageUrl}
@@ -1914,24 +1914,24 @@ const POSTerminal: React.FC<POSProps> = ({
                       product.imageUrl ? "hidden" : ""
                     }`}
                   >
-                    <Package className="w-6 h-6 mb-1" />
-                    <span className="text-xs font-bold">
+                    <Package className="w-5 h-5 tablet:w-6 tablet:h-6 mb-1" />
+                    <span className="text-[10px] tablet:text-xs font-bold">
                       {product.category}
                     </span>
                   </div>
                 </div>
-                <p className="font-black text-black text-xs sm:text-sm tracking-tight leading-tight mb-0.5">
+                <p className="font-black text-black text-[9px] tablet:text-[10px] sm:text-sm tracking-tight leading-tight mb-0.5">
                   {product.name}
                 </p>
-                <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-2">
+                <p className="text-[7px] tablet:text-[8px] text-gray-400 uppercase font-black tracking-widest mb-1 tablet:mb-1.5">
                   {product.category}
                 </p>
                 <div className="mt-auto flex items-center justify-between">
-                  <span className="text-black font-black text-sm sm:text-base">
+                  <span className="text-black font-black text-[10px] tablet:text-xs sm:text-base">
                     ₱{Math.round(product.basePrice).toLocaleString()}
                   </span>
                   <span
-                    className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${
+                    className={`text-[6px] tablet:text-[7px] px-1 py-0.5 rounded-md font-black uppercase tracking-widest ${
                       product.totalStock < product.reorderPoint
                         ? "bg-black text-white"
                         : "bg-gray-100 text-gray-500"
@@ -1947,8 +1947,8 @@ const POSTerminal: React.FC<POSProps> = ({
       </div>
 
       {/* Right Column: Order Ticket */}
-      <div className="w-full lg:w-80 xl:w-96 flex flex-col bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="p-3 sm:p-5 bg-black text-white flex justify-between items-center">
+      <div className="w-full tablet:w-72 lg:w-80 xl:w-96 flex flex-col bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="p-2 tablet:p-3 sm:p-5 bg-black text-white flex justify-between items-center">
           <div>
             <h2 className="text-lg font-black tracking-tighter">TICKET</h2>
             <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
@@ -1963,7 +1963,7 @@ const POSTerminal: React.FC<POSProps> = ({
           </button>
         </div>
 
-        <div className="p-3 border-b border-gray-100 space-y-2">
+        <div className="p-2 tablet:p-2.5 sm:p-3 border-b border-gray-100 space-y-2">
           <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => setOrderType(OrderType.DINE_IN)}
@@ -2219,7 +2219,7 @@ const POSTerminal: React.FC<POSProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-1 flex flex-col">
+        <div className="flex-1 overflow-y-auto p-1.5 tablet:p-2 space-y-1 flex flex-col">
           {cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-30">
               <ShoppingCart size={32} className="mb-2" />
@@ -2231,7 +2231,7 @@ const POSTerminal: React.FC<POSProps> = ({
             cart.map((item) => (
               <div
                 key={item.productId}
-                className="flex items-center gap-1.5 p-1.5 rounded-lg border border-gray-50 hover:border-gray-200 transition-all group flex-shrink-0"
+                className="flex items-center gap-1 tablet:gap-1.5 p-1 tablet:p-1.5 rounded-lg border border-gray-50 hover:border-gray-200 transition-all group flex-shrink-0"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
@@ -2329,7 +2329,7 @@ const POSTerminal: React.FC<POSProps> = ({
           )}
         </div>
 
-        <div className="p-3 bg-gray-50 border-t border-gray-200 space-y-2">
+        <div className="p-2 tablet:p-2.5 sm:p-3 bg-gray-50 border-t border-gray-200 space-y-2">
           <div className="space-y-1 text-[8px]">
             <div className="flex justify-between">
               <span className="font-black text-gray-400 uppercase tracking-widest">
