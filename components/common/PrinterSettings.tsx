@@ -59,7 +59,30 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
       setTestMessage("Connection test successful! Printer is ready to use.");
     } catch (error) {
       setTestResult("error");
-      setTestMessage(error instanceof Error ? error.message : "Connection test failed");
+      setTestMessage(
+        error instanceof Error ? error.message : "Connection test failed",
+      );
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleSimpleTestPrint = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+    setTestMessage("");
+
+    try {
+      const printer = new ThermalPrinterService(config);
+      await printer.simpleTestPrint();
+
+      setTestResult("success");
+      setTestMessage("✅ Simple test print sent! Check if your printer printed 'TEST PRINT'");
+    } catch (error) {
+      setTestResult("error");
+      setTestMessage(
+        error instanceof Error ? error.message : "Test print failed",
+      );
     } finally {
       setIsTesting(false);
     }
@@ -467,25 +490,44 @@ const PrinterSettings: React.FC<PrinterSettingsProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-gray-900 flex items-center gap-2">
                   <TestTube size={16} />
-                  Test Connection
+                  Test Printer
                 </h4>
-                <button
-                  onClick={handleTest}
-                  disabled={isTesting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isTesting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Testing...
-                    </>
-                  ) : (
-                    <>
-                      <TestTube size={16} />
-                      Test Print
-                    </>
-                  )}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTest}
+                    disabled={isTesting}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                  >
+                    {isTesting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Testing...
+                      </>
+                    ) : (
+                      <>
+                        <TestTube size={16} />
+                        Test Connection
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleSimpleTestPrint}
+                    disabled={isTesting}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                  >
+                    {isTesting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Printing...
+                      </>
+                    ) : (
+                      <>
+                        <Printer size={16} />
+                        Simple Test Print
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {testResult && (

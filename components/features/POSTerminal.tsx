@@ -229,7 +229,7 @@ const POSTerminal: React.FC<POSProps> = ({
   const [showPrinterSettings, setShowPrinterSettings] = useState(false);
   const [printerConfig, setPrinterConfig] = useState<PrinterConfig>(() => {
     const saved = localStorage.getItem("thermalPrinterConfig");
-    return saved ? JSON.parse(saved) : { connectionType: "browser" };
+    return saved ? JSON.parse(saved) : { connectionType: "bluetooth", paperWidth: 32 };
   });
 
   const filteredProducts = products.filter(
@@ -632,6 +632,9 @@ const POSTerminal: React.FC<POSProps> = ({
     };
 
     onCompleteSale(transaction);
+
+    // Automatically print receipt to thermal printer
+    printReceipt(transaction);
 
     // Update table status if dine-in
     if (orderType === OrderType.DINE_IN && selectedTable) {
@@ -1040,7 +1043,7 @@ const POSTerminal: React.FC<POSProps> = ({
           <style>
             @media print {
               @page { 
-                size: 80mm auto; 
+                size: 58mm auto; 
                 margin: 0; 
               }
               body { 
@@ -1055,9 +1058,9 @@ const POSTerminal: React.FC<POSProps> = ({
             }
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-              width: 80mm;
-              padding: 12mm 8mm;
-              font-size: 11px;
+              width: 58mm;
+              padding: 8mm 4mm;
+              font-size: 10px;
               line-height: 1.4;
               color: #000;
             }

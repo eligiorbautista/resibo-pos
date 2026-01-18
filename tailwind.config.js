@@ -14,6 +14,10 @@ export default {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
       },
+      screens: {
+        'tablet': '768px',
+        'desktop': '1440px',
+      },
     },
   },
   plugins: [],

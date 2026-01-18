@@ -105,8 +105,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
                         ? "bg-black text-white hover:bg-gray-800 shadow-lg hover:shadow-xl"
                         : "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : isClear
-                      ? "bg-gray-100 text-black hover:bg-gray-200 hover:shadow-md border border-gray-200"
-                      : "bg-gray-50 text-black border-2 border-gray-200 hover:border-black hover:bg-white hover:shadow-md"
+                        ? "bg-gray-100 text-black hover:bg-gray-200 hover:shadow-md border border-gray-200"
+                        : "bg-gray-50 text-black border-2 border-gray-200 hover:border-black hover:bg-white hover:shadow-md"
                   }
                 `}
               >

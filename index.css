@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Responsive base font-size scaling for tablets */
+/* Desktop (1440px+): 100% = 16px base */
+/* Tablet (768px-1439px): 87.5% = 14px base (12.5% reduction) */
+/* Mobile (<768px): Inherits default 100% */
+@media (min-width: 768px) and (max-width: 1439px) {
+  html {
+    font-size: 87.5%;
+  }
+}

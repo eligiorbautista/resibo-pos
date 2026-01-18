@@ -10,7 +10,77 @@ interface Navigator {
   serial?: {
     requestPort(): Promise<SerialPort>;
   };
+  bluetooth?: Bluetooth;
 }
+
+// Web Bluetooth API Type Declarations
+interface Bluetooth {
+  requestDevice(options?: RequestDeviceOptions): Promise<BluetoothDevice>;
+}
+
+interface RequestDeviceOptions {
+  filters?: BluetoothLEScanFilter[];
+  optionalServices?: BluetoothServiceUUID[];
+  acceptAllDevices?: boolean;
+}
+
+interface BluetoothLEScanFilter {
+  services?: BluetoothServiceUUID[];
+  name?: string;
+  namePrefix?: string;
+}
+
+interface BluetoothDevice {
+  id: string;
+  name?: string;
+  gatt?: BluetoothRemoteGATTServer;
+}
+
+interface BluetoothRemoteGATTServer {
+  device: BluetoothDevice;
+  connected: boolean;
+  connect(): Promise<BluetoothRemoteGATTServer>;
+  disconnect(): void;
+  getPrimaryService(
+    service: BluetoothServiceUUID,
+  ): Promise<BluetoothRemoteGATTService>;
+}
+
+interface BluetoothRemoteGATTService {
+  device: BluetoothDevice;
+  uuid: string;
+  isPrimary: boolean;
+  getCharacteristic(
+    characteristic: BluetoothCharacteristicUUID,
+  ): Promise<BluetoothRemoteGATTCharacteristic>;
+  getCharacteristics(): Promise<BluetoothRemoteGATTCharacteristic[]>;
+}
+
+interface BluetoothRemoteGATTCharacteristic {
+  service: BluetoothRemoteGATTService;
+  uuid: string;
+  properties: BluetoothCharacteristicProperties;
+  value?: DataView;
+  writeValue(value: BufferSource): Promise<void>;
+  writeValueWithResponse(value: BufferSource): Promise<void>;
+  writeValueWithoutResponse(value: BufferSource): Promise<void>;
+  readValue(): Promise<DataView>;
+}
+
+interface BluetoothCharacteristicProperties {
+  broadcast: boolean;
+  read: boolean;
+  writeWithoutResponse: boolean;
+  write: boolean;
+  notify: boolean;
+  indicate: boolean;
+  authenticatedSignedWrites: boolean;
+  reliableWrite: boolean;
+  writableAuxiliaries: boolean;
+}
+
+type BluetoothServiceUUID = number | string;
+type BluetoothCharacteristicUUID = number | string;
 
 interface USBDevice {
   open(): Promise<void>;

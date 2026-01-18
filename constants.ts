@@ -1,6 +1,7 @@
 import { ModifierGroup, Modifier } from "./types";
 import logoWhite from "./assets/logos/main-white-text.png";
 import logoBlack from "./assets/logos/main-black-text.png";
+import restaurantLogo from "./assets/logos/restaurant-logo.png";
 
 // ============================================
 // BRANDING CONFIGURATION
@@ -16,6 +17,7 @@ export const BRANDING = {
   // Logo paths
   LOGO_WHITE: logoWhite, // For dark backgrounds
   LOGO_BLACK: logoBlack, // For light backgrounds
+  RESTAURANT_LOGO: restaurantLogo,
 
   // Membership Card Prefix (for generating membership card numbers)
   MEMBERSHIP_CARD_PREFIX: "MEM",
@@ -23,60 +25,6 @@ export const BRANDING = {
   // Logo Alt Text
   LOGO_ALT_TEXT: "RESIBO Logo",
 } as const;
-
-// ============================================
-
-export const MODIFIER_GROUPS: ModifierGroup[] = [
-  {
-    id: "mg1",
-    name: "Size",
-    required: true,
-    maxSelections: 1,
-    modifiers: [
-      { id: "m1", name: "Small", price: 0, category: "Size" },
-      { id: "m2", name: "Medium", price: 20, category: "Size" },
-      { id: "m3", name: "Large", price: 40, category: "Size" },
-    ],
-  },
-  {
-    id: "mg2",
-    name: "Milk Options",
-    required: false,
-    maxSelections: 1,
-    modifiers: [
-      { id: "m4", name: "Whole Milk", price: 0, category: "Milk" },
-      { id: "m5", name: "Oat Milk", price: 15, category: "Milk" },
-      { id: "m6", name: "Almond Milk", price: 15, category: "Milk" },
-      { id: "m7", name: "Soy Milk", price: 10, category: "Milk" },
-    ],
-  },
-  {
-    id: "mg3",
-    name: "Add-ons",
-    required: false,
-    maxSelections: 5,
-    modifiers: [
-      { id: "m8", name: "Extra Shot", price: 25, category: "Add-ons" },
-      { id: "m9", name: "Whipped Cream", price: 15, category: "Add-ons" },
-      { id: "m10", name: "Caramel Syrup", price: 10, category: "Add-ons" },
-      { id: "m11", name: "Vanilla Syrup", price: 10, category: "Add-ons" },
-      { id: "m12", name: "Extra Cheese", price: 20, category: "Add-ons" },
-    ],
-  },
-  {
-    id: "mg4",
-    name: "Customization",
-    required: false,
-    maxSelections: 10,
-    modifiers: [
-      { id: "m13", name: "No Onions", price: 0, category: "Customization" },
-      { id: "m14", name: "No Spice", price: 0, category: "Customization" },
-      { id: "m15", name: "Extra Spice", price: 0, category: "Customization" },
-      { id: "m16", name: "Well Done", price: 0, category: "Customization" },
-      { id: "m17", name: "Medium Rare", price: 0, category: "Customization" },
-    ],
-  },
-];
 
 export const TAX_RATE = 0.12; // 12% VAT
 export const SERVICE_CHARGE_RATE = 0.1; // 10% Service Charge
@@ -114,10 +62,10 @@ export const RESTAURANT_NAME = "ISABEL'S KITCHEN";
 // Update these values with your actual BIR registration details
 export const BIR_CONFIG = {
   // Tax Identification Number (TIN) - Update with your business TIN
-  TIN: "[YOUR_TIN_HERE]", // Format: XXX-XXX-XXX-XXX
+  TIN: "000-000-000-000", // Format: XXX-XXX-XXX-XXX
 
   // Business Address (for receipts and BIR reporting)
-  BUSINESS_ADDRESS: "[YOUR_BUSINESS_ADDRESS_HERE]",
+  BUSINESS_ADDRESS: "Lucena City, Quezon, Philippines",
 
   // Permit to Use (PTU) Status
   // Set to true once BIR issues PTU, false until then
